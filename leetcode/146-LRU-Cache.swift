@@ -3,17 +3,21 @@ class LRUCache {
     private let capacity: Int
     private var count = 0
 
+    private let head = LRUCacheNode(0, 0)
+    private let tail = LRUCacheNode(0, 0)
+
     private var dict = [Int: LRUCacheNode]()
-    private var head: LRUCacheNode?
-    private var tail: LRUCacheNode?
 
     init(_ capacity: Int) {
         self.capacity = capacity
+
+        head.next = tail
+        tail.pre = head
     }
 
     func get(_ key: Int) -> Int {
         if let node = dict[key] {
-            remove(node.key)
+            remove(key)
             insert(node)
             return node.val
         }
@@ -25,51 +29,40 @@ class LRUCache {
             node.val = value
             remove(key)
             insert(node)
-        } else {
-            let node = LRUCacheNode(key, value)
-            dict[key] = node
-            if count == capacity, let tailKey = tail?.key {
-                remove(tailKey)
-                dict.removeValue(forKey: tailKey)
-            }
-            insert(node)
+            return
         }
+
+        let node = LRUCacheNode(key, value)
+        dict[key] = node
+        if count == capacity, let tailKey = tail.pre?.key {
+            remove(tailKey)
+        }
+        insert(node)
     }
 
     private func insert(_ node: LRUCacheNode) {
-        if count == 0 {
-            head = node
-            tail = node
-        } else {
-            node.next = head
-            head?.pre = node
-            head = node
-        }
+        dict[node.key] = node
+
+        node.next = head.next
+        head.next?.pre = node
+        node.pre = head
+        head.next = node
+
         count += 1
     }
 
-    @discardableResult
-    private func remove(_ key: Int) -> LRUCacheNode? {
+    private func remove(_ key: Int) {
         guard count > 0, let node = dict[key] else {
-            return nil
+            return
         }
-        if count == 1 {
-            head = nil
-            tail = nil
-        } else if head!.key == node.key {
-            head = node.next
-            head?.pre = nil
-        } else if tail!.key == node.key {
-            tail = node.pre
-            tail?.next = nil
-        } else {
-            node.pre?.next = node.next
-            node.next?.pre = node.pre
-        }
-        node.next = nil
+        dict.removeValue(forKey: key)
+
+        node.pre?.next = node.next
+        node.next?.pre = node.pre
         node.pre = nil
+        node.next = nil
+
         count -= 1
-        return node
     }
 
 }
