@@ -19,36 +19,26 @@ class Solution {
         while lists.count > 1 {
             let first = lists.removeFirst()
             let second = lists.removeFirst()
-            let merged = merge2Lists(first, second)
+            let merged = merge(first, second)
             lists.append(merged)
         }
 
         return lists[0]
     }
 
-    func merge2Lists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
-        var cursor1 = l1
-        var cursor2 = l2
-        var result = ListNode(0)
-        var node: ListNode? = result
-
-        while let c1 = cursor1, let c2 = cursor2 {
-            if c1.val > c2.val {
-                node?.next = c2
-                cursor2 = c2.next
-            } else {
-                node?.next = c1
-                cursor1 = c1.next
-            }
-            node = node?.next
+    func merge(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+        guard let l1 = l1 else {
+            return l2
         }
-        if cursor1 != nil {
-            node?.next = cursor1
+        guard let l2 = l2 else {
+            return l1
         }
-        if cursor2 != nil {
-            node?.next = cursor2
+        if l1.val < l2.val {
+            l1.next = merge(l1.next, l2)
+            return l1
+        } else {
+            l2.next = merge(l1, l2.next)
+            return l2
         }
-
-        return result.next
     }
 }
