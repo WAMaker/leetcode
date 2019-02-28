@@ -1,36 +1,37 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
 class Solution {
-	func searchMatrix(_ matrix: [[Int]], _ target: Int) -> Bool {
-		guard let cols = matrix.first?.count else {
-			return false
+	func buildTree(_ preorder: [Int], _ inorder: [Int]) -> TreeNode? {
+		var map = [Int: Int]()
+		inorder.enumerated().forEach {
+			map[$1] = $0
 		}
-		return binarySearchIn2D(matrix, 0, matrix.count - 1, 0, cols - 1, target)
+		return buildTree(preorder, 0, preorder.count - 1, inorder, 0, inorder.count - 1, map)
 	}
 	
-	private func binarySearchIn2D(_ matrix: [[Int]], _ startX: Int, _ endX: Int, _ startY: Int, _ endY: Int, _ target: Int) -> Bool {
-		if startX > endX || startY > endY {
-			return false
+	func buildTree(_ preorder: [Int], _ ps: Int, _ pe: Int, _ inorder: [Int], _ ins: Int, _ ine: Int, _ map: [Int: Int]) -> TreeNode? {
+		if ps > pe || ins > ine {
+			return nil
 		}
-
-		let midX = (startX + endX) / 2
-		let col = binarySearch(matrix[midX], startY, endY, target)
-		if matrix[midX][col] == target {
-			return true
+		let val = preorder[ps]
+		guard let index = map[val] else {
+			return nil
 		}
-		
-		return binarySearchIn2D(matrix, startX, midX - 1, col, endY, target) || binarySearchIn2D(matrix, midX + 1, endX, startY, col, target)
-	}
-	
-	private func binarySearch(_ array: [Int], _ start: Int, _ end: Int, _ target: Int) -> Int {
-		let mid = (start + end) / 2
-		if start >= end || array[mid] == target {
-			return mid
-		}
-		if array[mid] > target {
-			return binarySearch(array, start, mid - 1, target)
-		}
-		if mid == array.count - 1 || array[mid + 1] > target {
-			return mid
-		}
-		return binarySearch(array, mid + 1, end, target)
+		let root = TreeNode(val)
+		let len = index - ins
+		root.left = buildTree(preorder, ps + 1, ps + len, inorder, ins, ins + len - 1, map)
+		root.right = buildTree(preorder, ps + len + 1, pe, inorder, ins + len + 1, ine, map)
+		return root
 	}
 }
