@@ -1,72 +1,43 @@
 class Solution {
     func findKthLargest(_ nums: [Int], _ k: Int) -> Int {
-        if nums.isEmpty {
-            return 0
+        var nums = nums
+        return quickFind(&nums, 0, nums.count - 1, k)
+    }
+    
+    private func quickFind(_ nums: inout [Int], _ lo: Int, _ hi: Int, _ k: Int) -> Int {
+        if lo == hi {
+            return nums[lo]
         }
-        let pq = PriorityQueue(k)
-        nums.forEach { num in
-            pq.add(num)
-            if pq.size() > k {
-                pq.deleteMin()
+        let mid = lo + (hi - lo) >> 1
+        let pivot = midNum(nums[lo], nums[hi], nums[mid])
+        
+        var i = lo - 1, j = hi + 1
+        while (i < j) {
+            repeat {
+                j -= 1
+            } while nums[j] < pivot && i <= j
+            repeat {
+                i += 1
+            } while nums[i] > pivot && i <= j
+            
+            if i < j {
+                (nums[i], nums[j]) = (nums[j], nums[i])
             }
         }
-        return pq.smallestInQueue()
-    }
-}
 
-class PriorityQueue {
-
-    private let k: Int
-    private var last = 0
-    private var arr = [Int]()
-
-    init(_ k: Int) {
-        self.k = k
-        arr.append(0)
-    }
-
-    func add(_ num: Int) {
-        arr.append(num)
-        last += 1
-        swim(last)
-    }
-
-    func size() -> Int {
-        return last
-    }
-
-    func deleteMin() {
-        (arr[1], arr[last]) = (arr[last], arr[1])
-        arr.removeLast()
-        last -= 1
-        sink(1)
-    }
-
-    func smallestInQueue() -> Int {
-        return arr[1]
-    }
-
-    private func swim(_ index: Int) {
-        var idx = index
-        while idx > 1 && arr[idx / 2] > arr[idx] {
-            (arr[idx / 2], arr[idx]) = (arr[idx], arr[idx / 2])
-            idx /= 2
+        if k - 1 <= j {
+            return quickFind(&nums, lo, j, k)
         }
+        return quickFind(&nums, j + 1, hi, k)
     }
-
-    private func sink(_ index: Int) {
-        var idx = index
-        while idx * 2 <= k {
-            var next = idx * 2
-            if next < k && arr[next] > arr[next + 1] {
-                next += 1
-            }
-            if (arr[idx] < arr[next]) {
-                break
-            }
-            (arr[idx], arr[next]) = (arr[next], arr[idx])
-            idx = next
+    
+    private func midNum(_ a: Int, _ b: Int, _ c: Int) -> Int {
+        if a > b {
+            return b > c ? b : c
         }
+        if b > c {
+            return a > c ? a : c
+        }
+        return b
     }
-
 }
