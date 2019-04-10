@@ -33,10 +33,10 @@ class Solution {
     
     private func midNum(_ a: Int, _ b: Int, _ c: Int) -> Int {
         if a > b {
-            return b > c ? b : c
+            return b > c ? b : min(a, c)
         }
         if b > c {
-            return a > c ? a : c
+            return a > c ? max(a, c) : c
         }
         return b
     }
