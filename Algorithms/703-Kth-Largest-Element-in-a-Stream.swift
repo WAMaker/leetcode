@@ -1,72 +1,87 @@
-class Solution {
-    func findKthLargest(_ nums: [Int], _ k: Int) -> Int {
-        if nums.isEmpty {
-            return 0
+
+class KthLargest {
+    
+    private let heap: Heap
+
+    init(_ k: Int, _ nums: [Int]) {
+        heap = Heap(k: k)
+        nums.forEach {
+            heap.add($0)
         }
-        let pq = PriorityQueue(k)
-        nums.forEach { num in
-            pq.add(num)
-            if pq.size() > k {
-                pq.deleteMin()
-            }
-        }
-        return pq.smallestInQueue()
+    }
+    
+    func add(_ val: Int) -> Int {
+        return heap.add(val)
     }
 }
 
-class PriorityQueue {
+/**
+ * Your KthLargest object will be instantiated and called as such:
+ * let obj = KthLargest(k, nums)
+ * let ret_1: Int = obj.add(val)
+ */
 
+class Heap {
+    
     private let k: Int
+    private var nums: [Int]
     private var last = 0
-    private var arr = [Int]()
-
-    init(_ k: Int) {
+    
+    private var size: Int {
+        return nums.count - 1
+    }
+    
+    init(k: Int) {
         self.k = k
-        arr.append(0)
+        self.nums = [Int](repeating: 0, count: k + 2)
+    }
+    
+    @discardableResult
+    func add(_ val: Int) -> Int {
+        if last == 0 {
+            last += 1
+            nums[last] = val
+            return val
+        }
+        if last < k || nums[1] <= val {
+            last += 1
+            nums[last] = val
+            swim(last)
+        }
+
+        if last > k {
+            deleteMin()
+        }
+        return nums[1]
     }
 
-    func add(_ num: Int) {
-        arr.append(num)
-        last += 1
-        swim(last)
-    }
-
-    func size() -> Int {
-        return last
-    }
-
-    func deleteMin() {
-        (arr[1], arr[last]) = (arr[last], arr[1])
-        arr.removeLast()
+    private func deleteMin() {
+        (nums[1], nums[last]) = (nums[last], nums[1])
         last -= 1
         sink(1)
     }
-
-    func smallestInQueue() -> Int {
-        return arr[1]
-    }
-
-    private func swim(_ index: Int) {
-        var idx = index
-        while idx > 1 && arr[idx / 2] > arr[idx] {
-            (arr[idx / 2], arr[idx]) = (arr[idx], arr[idx / 2])
-            idx /= 2
+    
+    private func swim(_ idx: Int) {
+        var idx = idx
+        while nums[idx] < nums[idx >> 1], idx > 1 {
+            (nums[idx], nums[idx >> 1]) = (nums[idx >> 1], nums[idx])
+            idx = idx >> 1
         }
     }
-
-    private func sink(_ index: Int) {
-        var idx = index
-        while idx * 2 <= k {
-            var next = idx * 2
-            if next < k && arr[next] > arr[next + 1] {
-                next += 1
+    
+    private func sink(_ idx: Int) {
+        var idx = idx
+        while idx << 1 <= last {
+            var ti = idx << 1
+            if ti + 1 <= last, nums[ti] > nums[ti + 1] {
+                ti += 1
             }
-            if (arr[idx] < arr[next]) {
+            if nums[idx] <= nums[ti] {
                 break
             }
-            (arr[idx], arr[next]) = (arr[next], arr[idx])
-            idx = next
+            (nums[ti], nums[idx]) = (nums[idx], nums[ti])
+            idx = ti
         }
     }
-
+    
 }
