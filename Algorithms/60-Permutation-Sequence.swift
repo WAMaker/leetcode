@@ -1,7 +1,6 @@
 class Solution {
 	func getPermutation(_ n: Int, _ k: Int) -> String {
-		var numUsed = [Bool](repeating: false, count: n + 1)
-		numUsed[0] = true
+		var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 		var factorial = 1
 		for i in 1 ..< n {
@@ -13,15 +12,12 @@ class Solution {
 		var divisor = n - 1
 
 		for i in 0 ..< n {
-			for (num, used) in numUsed.enumerated() {
-				if used {
-					continue
-				}
+			for (index, number) in numbers.enumerated() {
 				if k > factorial {
 					k -= factorial
 				} else {
-					result += "\(num)"
-					numUsed[num] = true
+					result += "\(number)"
+					numbers.remove(at: index)
 					break
 				}
 			}
